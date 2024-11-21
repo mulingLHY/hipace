@@ -81,6 +81,14 @@ AdvanceBeamParticlesSlice (
     const amrex::Real y_pos_offset_lev1 = GetPosOffset(1, gm[lev1_idx], slice_fab_lev1.box());
     const amrex::Real y_pos_offset_lev2 = GetPosOffset(1, gm[lev2_idx], slice_fab_lev2.box());
 
+    const amrex::Real dz_inv_lev0 = gm[lev0_idx].InvCellSize(2);
+    const amrex::Real dz_inv_lev1 = gm[lev1_idx].InvCellSize(2);
+    const amrex::Real dz_inv_lev2 = gm[lev2_idx].InvCellSize(2);
+
+    const amrex::Real z_pos_offset_lev0 = GetPosOffset(2, gm[lev0_idx], slice_fab_lev0.box());
+    const amrex::Real z_pos_offset_lev1 = GetPosOffset(2, gm[lev1_idx], slice_fab_lev1.box());
+    const amrex::Real z_pos_offset_lev2 = GetPosOffset(2, gm[lev2_idx], slice_fab_lev2.box());
+
     const CheckDomainBounds lev1_bounds {gm[lev1_idx]};
     const CheckDomainBounds lev2_bounds {gm[lev2_idx]};
 
@@ -192,6 +200,20 @@ AdvanceBeamParticlesSlice (
                 doGatherShapeN<depos_order.value>(xp, yp, ExmByp, EypBxp, Ezp, Bxp, Byp, Bzp,
                     slice_arr, psi_comp, ez_comp, bx_comp, by_comp, bz_comp,
                     dx_inv, dy_inv, x_pos_offset, y_pos_offset);
+
+                if ( slice != gm[0].Domain().bigEnd(Direction::z) ) {
+                    // define field at particle position reals
+                    amrex::ParticleReal ExmBypp = 0._rt, EypBxpp = 0._rt, Ezpp = 0._rt;
+                    amrex::ParticleReal Bxpp = 0._rt, Bypp = 0._rt, Bzpp = 0._rt;
+
+                    // field gather for a single particle
+                    doGatherShapeN<depos_order.value>(xp, yp, ExmBypp, EypBxpp, Ezpp, Bxpp, Bypp, Bzpp,
+                        slice_arr, psi_comp, Comps[WhichSlice::Previous]["Ez"], bx_comp, by_comp, bz_comp,
+                        dx_inv, dy_inv, x_pos_offset, y_pos_offset);
+
+                    amrex::Real zint = (zp-min_z)*dz_inv_lev0;
+                    Ezp = Ezp * (1._rt-zint) + Ezpp * zint;
+                }
 
                 if (c_use_external_fields.value) {
                     ApplyExternalField(xp, yp, zp, time, clight, ExmByp, EypBxp, Ezp, Bxp, Byp, Bzp,

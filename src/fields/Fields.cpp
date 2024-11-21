@@ -72,6 +72,7 @@ Fields::AllocData (
             // beams share jx_beam jy_beam jz_beam
             // jx jy rhomjz for all plasmas and beams
             // rho is plasma-only if used
+            Comps[WhichSlice::Previous].multi_emplace(N_Comps, "Ez");
 
             int isl = WhichSlice::Next;
             Comps[isl].multi_emplace(N_Comps, "jx_beam", "jy_beam");
@@ -594,7 +595,7 @@ Fields::ShiftSlices (int lev)
 
     // only shift the slices that are allocated
     if (explicit_solve) {
-        shift(lev, WhichSlice::Previous, WhichSlice::This, "jx_beam", "jy_beam");
+        shift(lev, WhichSlice::Previous, WhichSlice::This, "jx_beam", "jy_beam", "Ez");
         duplicate(lev, WhichSlice::This, {"jx_beam", "jy_beam", "jx"     , "jy"     },
                        WhichSlice::Next, {"jx_beam", "jy_beam", "jx_beam", "jy_beam"});
     } else {
