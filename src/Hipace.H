@@ -69,7 +69,7 @@ struct Hipace_early_init
     inline static int m_depos_order_xy = 2;
     /** Order of the field gather and current deposition shape factor in the longitudinal direction
      */
-    inline static int m_depos_order_z = 0;
+    inline static int m_depos_order_z = 1;
     /** Type of derivative used in explicit deposition. 0: analytic, 1: nodal, 2: centered
      */
     inline static int m_depos_derivative_type = 2;
