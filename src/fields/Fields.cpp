@@ -139,6 +139,8 @@ Fields::AllocData (
             Comps[isl].multi_emplace(N_Comps, "jx_beam", "jy_beam");
             if (Hipace::m_depos_order_z == 2) {
                 Comps[isl].multi_emplace(N_Comps, "Ez");
+            } else if (Hipace::m_depos_order_z == 1) {
+                Comps[isl].multi_emplace(N_Comps, "Ez", "Psi", "Bx", "By", "Bz");
             }
 
             isl = WhichSlice::RhomJzIons;
@@ -215,6 +217,8 @@ Fields::AllocData (
             Comps[isl].multi_emplace(N_Comps, "Bx", "By", "jx", "jy");
             if (Hipace::m_depos_order_z == 2) {
                 Comps[isl].multi_emplace(N_Comps, "Ez");
+            } else if (Hipace::m_depos_order_z == 1) {
+                Comps[isl].multi_emplace(N_Comps, "Ez", "Psi", "Bx", "By", "Bz");
             }
 
             isl = WhichSlice::RhomJzIons;
@@ -727,6 +731,8 @@ Fields::ShiftSlices (int lev)
     }
     if (Hipace::m_depos_order_z == 2) {
         shift(lev, WhichSlice::Previous, WhichSlice::This, "Ez");
+    } else if (Hipace::m_depos_order_z == 1) {
+        shift(lev, WhichSlice::Previous, WhichSlice::This, "Ez", "Psi", "Bx", "By", "Bz");
     }
 }
 

@@ -44,6 +44,12 @@ AdvanceBeamParticlesSlice (
     const int ez_comp_prev = do_ez_inzerp ? Comps[WhichSlice::Previous]["Ez"] : -1;
     const int ez_comp_next = do_ez_inzerp ? Comps[WhichSlice::Next]["Ez"] : -1;
 
+    const int psi_comp_p = (Hipace::m_depos_order_z == 1) ? Comps[WhichSlice::Previous]["Psi"] : -1;
+    const int ez_comp_p = (Hipace::m_depos_order_z == 1) ? Comps[WhichSlice::Previous]["Ez"] : -1;
+    const int bx_comp_p = (Hipace::m_depos_order_z == 1) ? Comps[WhichSlice::Previous]["Bx"] : -1;
+    const int by_comp_p = (Hipace::m_depos_order_z == 1) ? Comps[WhichSlice::Previous]["By"] : -1;
+    const int bz_comp_p = (Hipace::m_depos_order_z == 1) ? Comps[WhichSlice::Previous]["Bz"] : -1;
+
     const int lev0_idx = 0;
     const int lev1_idx = std::min(1, current_N_level-1);
     const int lev2_idx = std::min(2, current_N_level-1);
@@ -211,6 +217,25 @@ AdvanceBeamParticlesSlice (
                             Ezp += shape_p * shape_y * shape_x * slice_arr(icell, jcell, ez_comp_prev);
                             Ezp += shape_n * shape_y * shape_x * slice_arr(icell, jcell, ez_comp_next);
                         }
+                    }
+                } else if (Hipace::m_depos_order_z == 1) {
+                    if ( slice != gm[0].Domain().bigEnd(Direction::z) ) {
+                        // define field at particle position reals
+                        amrex::ParticleReal ExmBypp = 0._rt, EypBxpp = 0._rt, Ezpp = 0._rt;
+                        amrex::ParticleReal Bxpp = 0._rt, Bypp = 0._rt, Bzpp = 0._rt;
+    
+                        // field gather for a single particle
+                        doGatherShapeN<depos_order.value>(xp, yp, ExmBypp, EypBxpp, Ezpp, Bxpp, Bypp, Bzpp,
+                            slice_arr, psi_comp_p, ez_comp_p, bx_comp_p, by_comp_p, bz_comp_p,
+                            dx_inv, dy_inv, x_pos_offset, y_pos_offset);
+    
+                        amrex::Real zint = (zp-min_z)*dz_inv - 0.5_rt;
+                        ExmByp = ExmByp * (1._rt-zint) + ExmBypp * zint;
+                        EypBxp = EypBxp * (1._rt-zint) + EypBxpp * zint;
+                        Ezp = Ezp * (1._rt-zint) + Ezpp * zint;
+                        Bxp = Bxp * (1._rt-zint) + Bxpp * zint;
+                        Byp = Byp * (1._rt-zint) + Bypp * zint;
+                        Bzp = Bzp * (1._rt-zint) + Bzpp * zint;
                     }
                 }
 
